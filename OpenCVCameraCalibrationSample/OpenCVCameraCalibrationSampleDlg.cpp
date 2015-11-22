@@ -209,7 +209,7 @@ void COpenCVCameraCalibrationSampleDlg::OnTimer(UINT_PTR nIDEvent)
 //--------------------------------------------------------------------------------------------------
 BOOL COpenCVCameraCalibrationSampleDlg::OpenFactoryAndCamera()
 { 
-    J_STATUS_TYPE   retval;
+    J_STATUS_TYPE   retval;  
 	uint32_t        iSize;
     uint32_t        iNumDev;
     bool8_t         bHasChange;

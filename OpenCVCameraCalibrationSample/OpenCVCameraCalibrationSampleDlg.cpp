@@ -17,10 +17,10 @@
 #	pragma comment (lib, "opencv_imgproc2411d.lib")
 #	pragma comment (lib, "opencv_calib3d2411d.lib")
 #else
-#	pragma comment (lib, "opencv_highgui245.lib")
-#	pragma comment (lib, "opencv_core245.lib")
-#	pragma comment (lib, "opencv_imgproc245.lib")
-#	pragma comment (lib, "opencv_calib3d245.lib")
+#	pragma comment (lib, "opencv_highgui2411.lib")
+#	pragma comment (lib, "opencv_core2411.lib")
+#	pragma comment (lib, "opencv_imgproc2411.lib")
+#	pragma comment (lib, "opencv_calib3d2411.lib")
 #endif
 
 // Select if this sample demonstrates a Warp or a edge-finder
@@ -93,6 +93,8 @@ BEGIN_MESSAGE_MAP(COpenCVCameraCalibrationSampleDlg, CDialog)
     ON_NOTIFY(UDN_DELTAPOS, IDC_CHESS_ROWS_SPIN, &COpenCVCameraCalibrationSampleDlg::OnDeltaposChessRowsSpin)
     ON_NOTIFY(UDN_DELTAPOS, IDC_CHESS_COLS_SPIN, &COpenCVCameraCalibrationSampleDlg::OnDeltaposChessColsSpin)
     ON_NOTIFY(UDN_DELTAPOS, IDC_IMAGE_COUNT_SPIN, &COpenCVCameraCalibrationSampleDlg::OnDeltaposImageCountSpin)
+	ON_BN_CLICKED(IDC_FILESCALIB, &COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib)
+	ON_BN_CLICKED(PRESTART_BTN, &COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn)
 END_MESSAGE_MAP()
 
 
@@ -110,21 +112,7 @@ BOOL COpenCVCameraCalibrationSampleDlg::OnInitDialog()
     SetIcon(m_hIcon, TRUE);			// Set big icon
     SetIcon(m_hIcon, FALSE);		// Set small icon
 
-    BOOL retval;
-
-    // Open factory & camera
-    retval = OpenFactoryAndCamera();  
-    if (retval)
-    {
-        GetDlgItem(IDC_CAMERAID)->SetWindowText(CString((char*)m_sCameraId));    // Display camera ID
-        InitializeControls();   // Initialize Controls
-        m_bCameraOpen = true;
-    }
-    else
-    {
-        GetDlgItem(IDC_CAMERAID)->SetWindowText(CString("error"));
-    }
-    EnableControls();   // Enable Controls
+	EnableControls();
 
     return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -221,8 +209,7 @@ BOOL COpenCVCameraCalibrationSampleDlg::OpenFactoryAndCamera()
         AfxMessageBox(CString("Could not open factory!"));
         return FALSE;
     }
-	AfxMessageBox(CString("Opening factory succeeded\n"));
-    
+	
     // Update camera list
     retval = J_Factory_UpdateCameraList(m_hFactory, &bHasChange);
     if (retval != J_ST_SUCCESS)
@@ -239,6 +226,7 @@ BOOL COpenCVCameraCalibrationSampleDlg::OpenFactoryAndCamera()
         AfxMessageBox(CString("Could not get the number of cameras!"), MB_OK | MB_ICONEXCLAMATION);
         return FALSE;
     }
+
     if (iNumDev == 0)
     {
         AfxMessageBox(CString("There is no camera!"), MB_OK | MB_ICONEXCLAMATION);
@@ -265,7 +253,7 @@ BOOL COpenCVCameraCalibrationSampleDlg::OpenFactoryAndCamera()
     }
     TRACE("Opening camera succeeded\n");
 
-    return TRUE;
+    
 }
 //--------------------------------------------------------------------------------------------------
 // CloseFactoryAndCamera
@@ -983,4 +971,33 @@ void COpenCVCameraCalibrationSampleDlg::OnDeltaposImageCountSpin(NMHDR *pNMHDR, 
     LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
     m_ImageCount = pNMUpDown->iPos;
     *pResult = 0;
+}
+
+
+void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
+{
+	std::string res = FilesCalibration::StartFilesCalibration();
+	CString cs;
+	cs = res.c_str();
+	if (res != "") AfxMessageBox(cs, MB_OK | MB_ICONEXCLAMATION);
+}
+
+
+void COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn()
+{
+	BOOL retval1;
+
+	// Open factory & camera
+	retval1 = OpenFactoryAndCamera();
+	if (retval1)
+	{
+		GetDlgItem(IDC_CAMERAID)->SetWindowText(CString((char*)m_sCameraId));    // Display camera ID
+		InitializeControls();   // Initialize Controls
+		m_bCameraOpen = true;
+	}
+	else
+	{
+		GetDlgItem(IDC_CAMERAID)->SetWindowText(CString("error"));
+	}
+	EnableControls();   // Enable Controls
 }

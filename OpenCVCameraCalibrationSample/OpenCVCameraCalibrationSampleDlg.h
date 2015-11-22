@@ -5,6 +5,8 @@
 
 #include <Jai_Factory.h>
 
+#include "file_calibration.h"
+
 // OpenCV includes required
 #include <opencv2/opencv.hpp>
 #include <opencv2/legacy/compat.hpp>
@@ -23,7 +25,6 @@ class COpenCVCameraCalibrationSampleDlg : public CDialog
     // Construction
 public:
     COpenCVCameraCalibrationSampleDlg(CWnd* pParent = NULL);	// standard constructor
-
     // Dialog Data
     enum { IDD = IDD_OPENCVCAMERACALIBRATIONSAMPLE_DIALOG };
 
@@ -113,5 +114,7 @@ public:
     afx_msg void OnDeltaposChessRowsSpin(NMHDR *pNMHDR, LRESULT *pResult);
     afx_msg void OnDeltaposChessColsSpin(NMHDR *pNMHDR, LRESULT *pResult);
     afx_msg void OnDeltaposImageCountSpin(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnBnClickedFilescalib();
+	afx_msg void OnBnClickedBtn();
 };
 

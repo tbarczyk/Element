@@ -1,0 +1,19 @@
+﻿Build started 11/23/2015 4:05:44 PM.
+     1>Project "C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\OpenCVCameraCalibrationSample\OpenCVCameraCalibrationSample.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"C:\OpenCV 2.4.11\opencv\build\include" /I"C:\Program Files\JAI\SDK\library\CPP\include" /Zi /nologo /W3 /WX- /Od /D WIN64 /D _WIN64 /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Debug\OpenCVCameraCalibrationSample.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt OpenCVCameraCalibrationSampleDlg.cpp
+         OpenCVCameraCalibrationSampleDlg.cpp
+     1>c:\program files\jai\sdk\sample\cpp\opencvcameracalibrationsample - vs2013\opencvcameracalibrationsample\file_calibration.h(5): warning C4091: 'static ' : ignored on left of 'FilesCalibration' when no variable is declared
+     1>c:\program files\jai\sdk\sample\cpp\opencvcameracalibrationsample - vs2013\opencvcameracalibrationsample\opencvcameracalibrationsampledlg.cpp(258): warning C4715: 'COpenCVCameraCalibrationSampleDlg::OpenFactoryAndCamera' : not all control paths return a value
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\x64\Debug\OpenCVCameraCalibrationSample.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\OpenCV 2.4.11\opencv\build\x64\vc12\lib" /LIBPATH:"C:\Program Files\JAI\SDK\library\CPP\lib\Win64_x64" Jai_Factory.lib opencv_calib3d2411d.lib opencv_contrib2411d.lib opencv_core2411d.lib opencv_features2d2411d.lib opencv_flann2411d.lib opencv_gpu2411d.lib opencv_highgui2411d.lib opencv_imgproc2411d.lib opencv_legacy2411d.lib opencv_ml2411d.lib opencv_nonfree2411d.lib opencv_objdetect2411d.lib opencv_ocl2411d.lib opencv_photo2411d.lib opencv_stitching2411d.lib opencv_superres2411d.lib opencv_ts2411d.lib opencv_video2411d.lib opencv_videostab2411d.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\x64\Debug\OpenCVCameraCalibrationSample.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\x64\Debug\OpenCVCameraCalibrationSample.lib" /MACHINE:X64 x64\Debug\OpenCVCameraCalibrationSample.res
+         x64\Debug\file_calibration.obj
+         x64\Debug\OpenCVCameraCalibrationSample.obj
+         x64\Debug\OpenCVCameraCalibrationSampleDlg.obj
+         x64\Debug\stdafx.obj
+         OpenCVCameraCalibrationSample.vcxproj -> C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\x64\Debug\OpenCVCameraCalibrationSample.exe
+     1>Done Building Project "C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\OpenCVCameraCalibrationSample\OpenCVCameraCalibrationSample.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.82

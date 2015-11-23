@@ -1,0 +1,23 @@
+﻿Build started 11/22/2015 11:07:42 AM.
+     1>Project "C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\OpenCVCameraCalibrationSample\OpenCVCameraCalibrationSample.vcxproj" on node 2 (Rebuild target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\OpenCV 2.4.11\opencv\build\include" /I"C:\Program Files\JAI\SDK\library\CPP\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Debug\OpenCVCameraCalibrationSample.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\OpenCV 2.4.11\opencv\build\include" /I"C:\Program Files\JAI\SDK\library\CPP\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\OpenCVCameraCalibrationSample.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt OpenCVCameraCalibrationSample.cpp OpenCVCameraCalibrationSampleDlg.cpp
+         OpenCVCameraCalibrationSampleDlg.cpp
+         OpenCVCameraCalibrationSample.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /l"0x0409" /IDebug\ /nologo /fo"Debug\OpenCVCameraCalibrationSample.res" OpenCVCameraCalibrationSample.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\Debug\OpenCVCameraCalibrationSample.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\OpenCV 2.4.11\opencv\build\x86\vc12\lib" /LIBPATH:"C:\Program Files\JAI\SDK\library\CPP\lib\Win32_i86" Jai_Factory.lib opencv_calib3d2411d.lib opencv_contrib2411d.lib opencv_core2411d.lib opencv_features2d2411d.lib opencv_flann2411d.lib opencv_gpu2411d.lib opencv_highgui2411d.lib opencv_imgproc2411d.lib opencv_legacy2411d.lib opencv_ml2411d.lib opencv_nonfree2411d.lib opencv_objdetect2411d.lib opencv_ocl2411d.lib opencv_photo2411d.lib opencv_stitching2411d.lib opencv_superres2411d.lib opencv_ts2411d.lib opencv_video2411d.lib opencv_videostab2411d.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\Debug\OpenCVCameraCalibrationSample.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE:NO /IMPLIB:"C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\Debug\OpenCVCameraCalibrationSample.lib" /MACHINE:X86 /SAFESEH Debug\OpenCVCameraCalibrationSample.res
+         Debug\OpenCVCameraCalibrationSample.obj
+         Debug\OpenCVCameraCalibrationSampleDlg.obj
+         Debug\stdafx.obj
+     1>OpenCVCameraCalibrationSample.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+         OpenCVCameraCalibrationSample.vcxproj -> C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\Debug\OpenCVCameraCalibrationSample.exe
+     1>Done Building Project "C:\Program Files\JAI\SDK\sample\CPP\OpenCVCameraCalibrationSample - VS2013\OpenCVCameraCalibrationSample\OpenCVCameraCalibrationSample.vcxproj" (Rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:06.96

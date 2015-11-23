@@ -62,6 +62,7 @@ public:
     bool            m_bImagesSaved;
     bool            m_bSaveSettings;
     bool            m_bSettingsSaved;
+	VIEW_HANDLE     m_hView;
     CRITICAL_SECTION m_CriticalSection;             // Critical section used for protecting the measured time value so it can be displayed
     CvMemStorage*   m_pStorage;
     IplImage*       m_pUndistortMapX;
@@ -116,5 +117,7 @@ public:
     afx_msg void OnDeltaposImageCountSpin(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedFilescalib();
 	afx_msg void OnBnClickedBtn();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedStreambutton();
 };
 

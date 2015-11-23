@@ -375,7 +375,11 @@ std::string FilesCalibration::StartFilesCalibration()
 				if (view.empty())
 					continue;
 				remap(view, rview, map1, map2, INTER_LINEAR);
-				imshow("Image View", rview);
+				imshow("Image Undistorted View", rview);
+				ellipse(view, Point(50, 50), Size(10, 30), 30, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
+
+				ellipse(view, Point(150, 150), Size(10, 30), 120, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
+				imshow("Image Distorted View", view);
 				char c = (char)waitKey();
 				if (c == ESC_KEY || c == 'q' || c == 'Q')
 					break;
@@ -413,7 +417,7 @@ static double computeReprojectionErrors(const vector<vector<Point3f> >& objectPo
 }
 
 static void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Point3f>& corners,
-	Settings::Pattern patternType /*= Settings::CHESSBOARD*/)
+	Settings::Pattern patternType = Settings::CHESSBOARD)
 {
 	corners.clear();
 

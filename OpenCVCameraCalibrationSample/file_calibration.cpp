@@ -20,7 +20,7 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 # define _CRT_SECURE_NO_WARNINGS
 #endif
-
+#define HAVE_CUFFT 1
 using namespace cv;
 using namespace std;
 
@@ -381,6 +381,7 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 	// -----------------------Show the undistorted image for the image list ------------------------
 	if (s.inputType == Settings::IMAGE_LIST && s.showUndistorsed)
 	{
+		
 		int lastImgIndex = s.imageList.size() - 1;
 		Mat view, rview, map1, map2, grayView, grayView0;
 		initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(),
@@ -462,6 +463,7 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			m20 = -sh*ca;
 			m21 = sh*sa*cb + ch*sb;
 			m22 = -sh*sa*sb + ch*cb;*/
+
 		AfxMessageBox(CString("Calibrated!"), MB_OK | MB_ICONEXCLAMATION);
 		for (int i = lastImgIndex; i < lastImgIndex + 1; i++) //dla ostatniego obrazka
 		{
@@ -495,7 +497,7 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			const clock_t begin_time2 = clock();
 			for (int i = 0; i < 1; i++)
 			{
-				threshold(grayView, grayView0, 100, 255, THRESH_BINARY);
+				threshold(grayView, grayView0, 200, 255, THRESH_BINARY);
 			}
 			float ocv = float(clock() - begin_time2) / CLOCKS_PER_SEC;
 
@@ -512,7 +514,9 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			ocl::DevicesInfo devices;
 			int devicesCount = ocl::getOpenCLDevices(devices);
 			ocl::oclMat afterErodeOcl;
-			Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 5));
+			Mat afterErodeOcv;
+			Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(31, 51));
+			ocl::oclMat kernelOCL = ocl::oclMat(kernel);
 			//auto B = new int[10][20];
 			//for (int i = 0; i<kernel.rows; i++){ 
 			//	uchar* rowi = kernel.ptr/*<uchar>*/(i);
@@ -522,20 +526,26 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			//}
 			try
 			{
-				// ... Contents of your main
-				ocl::erode(oclDst, afterErodeOcl, kernel);
+				const clock_t begin_time1 = clock();
+				ocl::erode(oclDst, afterErodeOcl, kernelOCL);
+				float oclerode = float(clock() - begin_time1) / CLOCKS_PER_SEC;
 
+				const clock_t begin_time2 = clock();
+				cv::erode(grayView0, afterErodeOcv, kernel);
+				float ocverode = float(clock() - begin_time2) / CLOCKS_PER_SEC;
 
+				//ocl::morphologyEx(oclDst, afterErodeOcl, 1, kernel);
+				//2058 2456
 				Mat dstFromOcl = Mat(oclDst);
 				Mat dsfAfterErodeOcl = Mat(afterErodeOcl);
 
-
+				
 				const char* winName = "threshold";
 				namedWindow(winName, 0);
 				cvResizeWindow(winName, 800, 600);
 				namedWindow("erode", 0);
 				cvResizeWindow("erode", 800, 600);
-				imshow(winName, dstFromOcl);
+				imshow(winName, afterErodeOcv);
 				
 				imshow("erode", dsfAfterErodeOcl);
 			}

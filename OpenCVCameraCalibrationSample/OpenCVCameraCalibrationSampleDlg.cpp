@@ -4,7 +4,10 @@
 #include "stdafx.h"
 #include "OpenCVCameraCalibrationSample.h"
 #include "OpenCVCameraCalibrationSampleDlg.h"
-
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -309,7 +312,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStart()
 	TopLeft.y = 50;
 
 	// Open stream
-	retval = J_Image_OpenStream(m_hCam, 0, reinterpret_cast<J_IMG_CALLBACK_OBJECT>(this), reinterpret_cast<J_IMG_CALLBACK_FUNCTION>(&COpenCVCameraCalibrationSampleDlg::StreamCBFunc), &m_hThread, (ViewSize.cx*ViewSize.cy));
+	retval = J_Image_OpenStream(m_hCam, 0, reinterpret_cast<J_IMG_CALLBACK_OBJECT>(this), reinterpret_cast<J_IMG_CALLBACK_FUNCTION>(&COpenCVCameraCalibrationSampleDlg::StreamCBFunc), &m_hThread, (ViewSize.cx*ViewSize.cy*bpp)/8);
 	if (retval != J_ST_SUCCESS) {
 		AfxMessageBox(CString("Could not open stream!"), MB_OK | MB_ICONEXCLAMATION);
 		return;
@@ -354,27 +357,29 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 		// Shows image
 		J_Image_ShowImage(m_hView, pAqImageInfo);
 	}
-	// Skip images if they start to queue up in order to avoid lag caused by the queue size.
-	//if (pAqImageInfo->iAwaitDelivery > 2)
-	//	return;
-
+	
 	// We only want to create the OpenCV Image object once and we want to get the correct size from the Acquisition Info structure
 	if (m_pImg == NULL)
 	{
-		// Create the Image:
-		// We assume this is a 8-bit monochrome image in this sample
-		m_pImg = cvCreateImage(cvSize(pAqImageInfo->iSizeX, pAqImageInfo->iSizeY), 8, 1);
-
-		// Create Undistort maps
-		//m_pUndistortMapX = cvCreateImage(cvSize(pAqImageInfo->iSizeX,pAqImageInfo->iSizeY), IPL_DEPTH_32F, 1);
-		//m_pUndistortMapY = cvCreateImage(cvSize(pAqImageInfo->iSizeX,pAqImageInfo->iSizeY), IPL_DEPTH_32F, 1);
-
+		m_pImg = cvCreateImage(cvSize(pAqImageInfo->iSizeX, pAqImageInfo->iSizeY), IPL_DEPTH_8U, 1);
 		m_ImgSize = cvGetSize(m_pImg);
 	}
 
-	// Copy the data from the Acquisition engine image buffer into the OpenCV Image obejct
+	std::vector<cv::Point2d> imagePoints;
+	
+	imagePoints.push_back(cv::Point2d(150,150));
+	imagePoints.push_back(cv::Point2d(350, 350));
+	/*objectPoints.push_back(Point3d(60, 0, 0));
+	objectPoints.push_back(Point3d(0, 60, 0));*/
+
 	memcpy(m_pImg->imageData, pAqImageInfo->pImageBuffer, m_pImg->imageSize);
-	cvShowImage("Source", m_pImg);
+	
+	cv::Mat viewAfterConversion;
+	cv::Mat image(m_pImg);
+	cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
+	cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
+	cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
+	cv::imshow("Source", viewAfterConversion);
 
 	/*
 	int count = 0;
@@ -990,11 +995,17 @@ void COpenCVCameraCalibrationSampleDlg::OnDeltaposImageCountSpin(NMHDR *pNMHDR, 
 
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 {
-	std::string res = FilesCalibration::StartFilesCalibration();
-	CString cs;
-	cs = res.c_str();
-	if (res != "") AfxMessageBox(cs, MB_OK | MB_ICONEXCLAMATION);
+	using namespace std;
+	using namespace cv;
+	calibrationResult res;
+	res = FilesCalibration::StartFilesCalibration();
+	/*Element el =  Element();
+	el.ComputeElement(res);*/
+	//CString cs;
+	//cs = res.c_str();
+	//if (res != "") AfxMessageBox(cs, MB_OK | MB_ICONEXCLAMATION);
 }
+
 
 
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn()

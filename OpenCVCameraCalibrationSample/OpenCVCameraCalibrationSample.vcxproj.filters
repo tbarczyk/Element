@@ -27,6 +27,9 @@
     <ClCompile Include="file_calibration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenCVCameraCalibrationSample.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file_calibration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,14 +1,18 @@
-#include "stdafx.h"
 
+
+#include "stdafx.h"
+#define FCABLIB 1;
+#include "file_calibration.h"
 #include <iostream>
 #include <sstream>
 #include <time.h>
 #include <stdio.h>
-#include "file_calibration.h"
-#include <opencv2/core/core.hpp>
+#include <cmath>
+#include "Element.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/ocl/ocl.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/legacy/compat.hpp>
@@ -27,7 +31,10 @@ static void help()
 		<< "Near the sample file you'll find the configuration file, which has detailed help of "
 		"how to edit it.  It may be any OpenCV supported file format XML/YAML." << endl;
 	getchar();
-}
+};
+
+
+
 class Settings
 {
 public:
@@ -217,178 +224,334 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
 
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 
-bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
+calibrationResult runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
 	vector<vector<Point2f> > imagePoints);
 
-std::string FilesCalibration::StartFilesCalibration()
+static void adaptativeStructuralElement(calibrationResult res){
+	cout << res.ok;
+};
+
+calibrationResult FilesCalibration::StartFilesCalibration()
+{
+	struct calibrationResult res;
+	res.ok = false;
+	help();
+	Settings s;
+	const std::string inputSettingsFile = "in_VID5.xml";
+	FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
+	if (!fs.isOpened())
 	{
-		help();
-		Settings s;
-		const std::string inputSettingsFile = "in_VID5.xml";
-		FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
-		if (!fs.isOpened())
+		cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << endl;
+		res.msg = "Could not open the configuration file :" + inputSettingsFile;
+		return res;
+	}
+	fs["Settings"] >> s;
+	fs.release();                                         // close Settings file
+
+	if (!s.goodInput)
+	{
+		cout << "Invalid input detected. Application stopping. " << endl;
+
+		res.msg = "Invalid input detected. Application stopping. ";
+		return res;
+	}
+
+	vector<vector<Point2f> > imagePoints;
+	Mat cameraMatrix, distCoeffs;
+	Size imageSize;
+	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
+	clock_t prevTimestamp = 0;
+	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
+	const char ESC_KEY = 27;
+	for (int i = 0;; ++i)
+	{
+		Mat view;
+		bool blinkOutput = false;
+
+		view = s.nextImage();
+
+		//-----  If no more image, or got enough, then stop calibration and show result -------------
+		if (mode == CAPTURING && imagePoints.size() >= (unsigned)s.nrFrames)
 		{
-			cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << endl;
-			return "Could not open the configuration file :" + inputSettingsFile;
+			res = runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints);
+			if (res.ok)
+				mode = CALIBRATED;
+			else
+				mode = DETECTION;
 		}
-		fs["Settings"] >> s;
-		fs.release();                                         // close Settings file
-
-		if (!s.goodInput)
+		if (view.empty())          // If no more images then run calibration, save and stop loop.
 		{
-			cout << "Invalid input detected. Application stopping. " << endl;
-			return "Invalid input detected. Application stopping. ";
-		}
-
-		vector<vector<Point2f> > imagePoints;
-		Mat cameraMatrix, distCoeffs;
-		Size imageSize;
-		int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
-		clock_t prevTimestamp = 0;
-		const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
-		const char ESC_KEY = 27;
-
-		for (int i = 0;; ++i)
-		{
-			Mat view;
-			bool blinkOutput = false;
-
-			view = s.nextImage();
-
-			//-----  If no more image, or got enough, then stop calibration and show result -------------
-			if (mode == CAPTURING && imagePoints.size() >= (unsigned)s.nrFrames)
-			{
-				if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints))
-					mode = CALIBRATED;
-				else
-					mode = DETECTION;
-			}
-			if (view.empty())          // If no more images then run calibration, save and stop loop.
-			{
-				if (imagePoints.size() > 0)
-					runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints);
-				break;
-			}
-
-
-			imageSize = view.size();  // Format input image.
-			if (s.flipVertical)    flip(view, view, 0);
-
-			vector<Point2f> pointBuf;
-
-			bool found;
-			switch (s.calibrationPattern) // Find feature points on the input format
-			{
-			case Settings::CHESSBOARD:
-				found = findChessboardCorners(view, s.boardSize, pointBuf,
-					CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-				break;
-			case Settings::CIRCLES_GRID:
-				found = findCirclesGrid(view, s.boardSize, pointBuf);
-				break;
-			case Settings::ASYMMETRIC_CIRCLES_GRID:
-				found = findCirclesGrid(view, s.boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID);
-				break;
-			default:
-				found = false;
-				break;
-			}
-
-			if (found)                // If done with success,
-			{
-				// improve the found corners' coordinate accuracy for chessboard
-				if (s.calibrationPattern == Settings::CHESSBOARD)
-				{
-					Mat viewGray;
-					cvtColor(view, viewGray, COLOR_BGR2GRAY);
-					cornerSubPix(viewGray, pointBuf, Size(11, 11),
-						Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
-				}
-
-				if (mode == CAPTURING &&  // For camera only take new samples after delay time
-					(!s.inputCapture.isOpened() || clock() - prevTimestamp > s.delay*1e-3*CLOCKS_PER_SEC))
-				{
-					imagePoints.push_back(pointBuf);
-					prevTimestamp = clock();
-					blinkOutput = s.inputCapture.isOpened();
-				}
-
-				// Draw the corners.
-				drawChessboardCorners(view, s.boardSize, Mat(pointBuf), found);
-			}
-
-			//----------------------------- Output Text ------------------------------------------------
-			string msg = (mode == CAPTURING) ? "100/100" :
-				mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
-			int baseLine = 0;
-			Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-			Point textOrigin(view.cols - 2 * textSize.width - 10, view.rows - 2 * baseLine - 10);
-
-			if (mode == CAPTURING)
-			{
-				if (s.showUndistorsed)
-					msg = format("%d/%d Undist", (int)imagePoints.size(), s.nrFrames);
-				else
-					msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
-			}
-
-			putText(view, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
-
-			if (blinkOutput)
-				bitwise_not(view, view);
-
-			//------------------------- Video capture  output  undistorted ------------------------------
-			if (mode == CALIBRATED && s.showUndistorsed)
-			{
-				Mat temp = view.clone();
-				undistort(temp, view, cameraMatrix, distCoeffs);
-			}
-
-			//------------------------------ Show image and check for input commands -------------------
-			imshow("Image View", view);
-			char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
-
-			if (key == ESC_KEY)
-				break;
-
-			if (key == 'u' && mode == CALIBRATED)
-				s.showUndistorsed = !s.showUndistorsed;
-
-			if (s.inputCapture.isOpened() && key == 'g')
-			{
-				mode = CAPTURING;
-				imagePoints.clear();
-			}
-		}
-
-		// -----------------------Show the undistorted image for the image list ------------------------
-		if (s.inputType == Settings::IMAGE_LIST && s.showUndistorsed)
-		{
-			Mat view, rview, map1, map2;
-			initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(),
-				getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0),
-				imageSize, CV_16SC2, map1, map2);
-
-			for (int i = 0; i < (int)s.imageList.size(); i++)
-			{
-				view = imread(s.imageList[i], 1);
-				if (view.empty())
-					continue;
-				remap(view, rview, map1, map2, INTER_LINEAR);
-				imshow("Image Undistorted View", rview);
-				ellipse(view, Point(50, 50), Size(10, 30), 30, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
-
-				ellipse(view, Point(150, 150), Size(10, 30), 120, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
-				imshow("Image Distorted View", view);
-				char c = (char)waitKey();
-				if (c == ESC_KEY || c == 'q' || c == 'Q')
-					break;
-			}
+			if (imagePoints.size() > 0)
+				runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints);
+			break;
 		}
 
 
-		return "";
-	};
+		imageSize = view.size();  // Format input image.
+		if (s.flipVertical)    flip(view, view, 0);
+
+		vector<Point2f> pointBuf;
+
+		bool found;
+		switch (s.calibrationPattern) // Find feature points on the input format
+		{
+		case Settings::CHESSBOARD:
+			found = findChessboardCorners(view, s.boardSize, pointBuf,
+				CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+			break;
+		case Settings::CIRCLES_GRID:
+			found = findCirclesGrid(view, s.boardSize, pointBuf);
+			break;
+		case Settings::ASYMMETRIC_CIRCLES_GRID:
+			found = findCirclesGrid(view, s.boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID);
+			break;
+		default:
+			found = false;
+			break;
+		}
+
+		if (found)                // If done with success,
+		{
+			// improve the found corners' coordinate accuracy for chessboard
+			if (s.calibrationPattern == Settings::CHESSBOARD)
+			{
+				Mat viewGray;
+				cvtColor(view, viewGray, COLOR_BGR2GRAY);
+				cornerSubPix(viewGray, pointBuf, Size(11, 11),
+					Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+			}
+
+			if (mode == CAPTURING &&  // For camera only take new samples after delay time
+				(!s.inputCapture.isOpened() || clock() - prevTimestamp > s.delay*1e-3*CLOCKS_PER_SEC))
+			{
+				imagePoints.push_back(pointBuf);
+				prevTimestamp = clock();
+				blinkOutput = s.inputCapture.isOpened();
+			}
+
+			// Draw the corners.
+			drawChessboardCorners(view, s.boardSize, Mat(pointBuf), found);
+		}
+
+		//----------------------------- Output Text ------------------------------------------------
+		string msg = (mode == CAPTURING) ? "100/100" :
+			mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
+		int baseLine = 0;
+		Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
+		Point textOrigin(view.cols - 2 * textSize.width - 10, view.rows - 2 * baseLine - 10);
+
+		if (mode == CAPTURING)
+		{
+			if (s.showUndistorsed)
+				msg = format("%d/%d Undist", (int)imagePoints.size(), s.nrFrames);
+			else
+				msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
+		}
+
+		putText(view, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
+
+		if (blinkOutput)
+			bitwise_not(view, view);
+
+		//------------------------- Video capture  output  undistorted ------------------------------
+		if (mode == CALIBRATED && s.showUndistorsed)
+		{
+			Mat temp = view.clone();
+			undistort(temp, view, cameraMatrix, distCoeffs);
+		}
+
+		//------------------------------ Show image and check for input commands -------------------
+
+		//imshow("Image View", view);
+		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
+
+		if (key == ESC_KEY)
+			break;
+
+		if (key == 'u' && mode == CALIBRATED)
+			s.showUndistorsed = !s.showUndistorsed;
+
+		if (s.inputCapture.isOpened() && key == 'g')
+		{
+			mode = CAPTURING;
+			imagePoints.clear();
+		}
+	}
+
+	// -----------------------Show the undistorted image for the image list ------------------------
+	if (s.inputType == Settings::IMAGE_LIST && s.showUndistorsed)
+	{
+		int lastImgIndex = s.imageList.size() - 1;
+		Mat view, rview, map1, map2, grayView, grayView0;
+		initUndistortRectifyMap(cameraMatrix, distCoeffs, Mat(),
+			getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0),
+			imageSize, CV_16SC2, map1, map2);
+
+		vector<Point3d> objectPoints;
+		vector<Point2d> imagePoints;
+		vector<Point3d> objectPointCenter;
+		vector<Point2d> imagePointCenter;
+		vector<Point3d> lineObjectPoints;
+		vector<Point2d> lineImagePoints;
+
+		objectPoints.push_back(Point3d(106 + 26.5, 106 + 26.5, 0));
+		objectPoints.push_back(Point3d(106 + 26.5, 106 + 26.5, -26.5));
+		objectPointCenter.push_back(Point3d(106 + 26.5, 106 + 26.5, -26.5 / 2));
+
+		objectPoints.push_back(Point3d(-106 - 26.5, 26.5, 0 - 200));
+		objectPoints.push_back(Point3d(-106 - 26.5, 26.5, -26.5 - 200));
+		objectPointCenter.push_back(Point3d(-106 - 26.5, 26.5, (-26.5 - 200) / 2));
+		objectPointCenter.push_back(Point3d(-106 - 26.5, 26.5, (-26.5 - 200) / 2));
+
+		lineObjectPoints.push_back(Point3d(0, 0, 0));
+		lineObjectPoints.push_back(Point3d(50, 0, 0));
+		lineObjectPoints.push_back(Point3d(0, 50, 0));
+		lineObjectPoints.push_back(Point3d(0, 0, 50));
+
+		/*objectPoints.push_back(Point3d(100, 100, 0));
+		objectPoints.push_back(Point3d(130, 100, 0));
+		objectPoints.push_back(Point3d(50, 50, 0));
+		objectPoints.push_back(Point3d(50, 80, 0));*/
+
+
+		cv::projectPoints(Mat(objectPoints), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
+			res.distCoeffs, imagePoints);
+
+		cv::projectPoints(Mat(objectPointCenter), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
+			res.distCoeffs, imagePointCenter);
+
+		cv::projectPoints(Mat(lineObjectPoints), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
+			res.distCoeffs, lineImagePoints);
+
+		/*pair<double, double> elVector = make_pair(imagePoints[1].x - imagePoints[0].x, imagePoints[1].y - imagePoints[0].y);
+		double norm = sqrt(elVector.first*elVector.first + elVector.second*elVector.second);
+		double cosinus = elVector.first / norm;
+		double sinus = elVector.second / norm;
+		int angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
+		*/
+		pair<double, double> elVector;
+		double norm;
+		double cosinus;
+		double sinus;
+		int angle;
+
+
+		/*double ch = cos(0.0835);
+		double sh = sin(0.0835);
+		double ca = cos(0.7896);
+		double sa = sin(0.7896);
+		double cb = cos(0.05059);
+		double sb = sin(0.05059);
+
+		double m00 = ch * ca;
+		double m01 = sh*sb - ch*sa*cb;
+		double m02 = ch*sa*sb + sh*cb;
+		double m10 = sa;
+		double m11 = ca*cb;
+		double m12 = -ca*sb;
+		double m20 = -sh*ca;
+		double m21 = sh*sa*cb + ch*sb;
+		double m22 = -sh*sa*sb + ch*cb;*/
+
+		/*	m00 = ch * ca;aa
+			m01 = sh*sb - ch*sa*cb;
+			m02 = ch*sa*sb + sh*cb;
+			m10 = sa;
+			m11 = ca*cb;
+			m12 = -ca*sb;
+			m20 = -sh*ca;
+			m21 = sh*sa*cb + ch*sb;
+			m22 = -sh*sa*sb + ch*cb;*/
+		AfxMessageBox(CString("Calibrated!"), MB_OK | MB_ICONEXCLAMATION);
+		for (int i = lastImgIndex; i < lastImgIndex + 1; i++) //dla ostatniego obrazka
+		{
+			view = imread(s.imageList[i], 1);
+			if (view.empty())
+				continue;
+			remap(view, rview, map1, map2, INTER_LINEAR);
+			imshow("Image Undistorted View", rview);
+			for (int j = 0; j < objectPoints.size(); j = j + 2)
+			{
+				elVector = make_pair(imagePoints[j + 1].x - imagePoints[j].x, imagePoints[j + 1].y - imagePoints[j].y);
+				norm = sqrt(elVector.first*elVector.first + elVector.second*elVector.second);
+				cosinus = elVector.first / norm;
+				sinus = elVector.second / norm;
+				angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
+				ellipse(view, imagePointCenter[j], Size(norm *0.5, norm*0.5*0.5), angle, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
+				//ellipse(view, Point(0, 0), Size(10, 30), 120, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
+			}
+
+			cvtColor(view, grayView, CV_BGR2GRAY);
+
+			ocl::oclMat oclSrc = ocl::oclMat(grayView);
+			ocl::oclMat oclDst;
+
+			arrowedLine(view, lineImagePoints[0], lineImagePoints[1], Scalar(0, 0, 255), 5, 8, 0);//x red
+			arrowedLine(view, lineImagePoints[0], lineImagePoints[2], Scalar(0, 255, 0), 5, 8, 0);//y green
+			arrowedLine(view, lineImagePoints[0], lineImagePoints[3], Scalar(255, 0, 0), 5, 8, 0);//z blue
+
+
+
+			const clock_t begin_time2 = clock();
+			for (int i = 0; i < 1; i++)
+			{
+				threshold(grayView, grayView0, 100, 255, THRESH_BINARY);
+			}
+			float ocv = float(clock() - begin_time2) / CLOCKS_PER_SEC;
+
+			const clock_t begin_time = clock();
+			for (int i = 0; i < 1; i++)
+			{
+				cv::ocl::threshold(oclSrc, oclDst, 200, 255, THRESH_BINARY);
+			}
+			float ocl = float(clock() - begin_time) / CLOCKS_PER_SEC;
+			/*static const ocl::DeviceInfo devicesInfo = ocl::DeviceInfo();*/
+			ocl::PlatformsInfo platforms;
+			int platformCount = ocl::getOpenCLPlatforms(platforms);
+
+			ocl::DevicesInfo devices;
+			int devicesCount = ocl::getOpenCLDevices(devices);
+			ocl::oclMat afterErodeOcl;
+			Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 5));
+			//auto B = new int[10][20];asasaa
+			//for (int i = 0; i<kernel.rows; i++){ 
+			//	uchar* rowi = kernel.ptr/*<uchar>*/(i);
+			//	for (int j = 0; j<kernel.cols; j++){
+			//		rowi[j] = rowi[j] * 255;
+			//	}
+			//}
+			try
+			{
+				// ... Contents of your main
+				ocl::erode(oclDst, afterErodeOcl, kernel);
+
+
+				Mat dstFromOcl = Mat(oclDst);
+				Mat dsfAfterErodeOcl = Mat(afterErodeOcl);
+
+
+				const char* winName = "threshold";
+				namedWindow(winName, 0);
+				cvResizeWindow(winName, 800, 600);
+				namedWindow("erode", 0);
+				cvResizeWindow("erode", 800, 600);
+				imshow(winName, dstFromOcl);
+				
+				imshow("erode", dsfAfterErodeOcl);
+			}
+			catch (cv::Exception & e)
+			{
+				cout << "oo" << endl;
+			}
+			char c = (char)waitKey();
+			if (c == ESC_KEY || c == 'q' || c == 'Q')
+				break;
+		}
+
+	}
+
+	return res;
+};
 
 static double computeReprojectionErrors(const vector<vector<Point3f> >& objectPoints,
 	const vector<vector<Point2f> >& imagePoints,
@@ -552,8 +715,9 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	}
 }
 
-bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs, vector<vector<Point2f> > imagePoints)
+calibrationResult runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs, vector<vector<Point2f> > imagePoints)
 {
+	calibrationResult result;
 	vector<Mat> rvecs, tvecs;
 	vector<float> reprojErrs;
 	double totalAvgErr = 0;
@@ -566,5 +730,10 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat&
 	if (ok)
 		saveCameraParams(s, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, reprojErrs,
 		imagePoints, totalAvgErr);
-	return ok;
+	result.ok = ok;
+	result.rvecs = rvecs;
+	result.tvecs = tvecs;
+	result.cameraMatrix = cameraMatrix;
+	result.distCoeffs = distCoeffs;
+	return result;
 }

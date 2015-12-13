@@ -513,7 +513,7 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			int devicesCount = ocl::getOpenCLDevices(devices);
 			ocl::oclMat afterErodeOcl;
 			Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 5));
-			//auto B = new int[10][20];asasaa
+			//auto B = new int[10][20];
 			//for (int i = 0; i<kernel.rows; i++){ 
 			//	uchar* rowi = kernel.ptr/*<uchar>*/(i);
 			//	for (int j = 0; j<kernel.cols; j++){

@@ -15,10 +15,10 @@
 // The following code links to the OpenCV libraries.
 // It is important to install the correct version of OpenCV before compiling this project
 #ifdef _DEBUG
-#	pragma comment (lib, "opencv_highgui2411d.lib")
-#	pragma comment (lib, "opencv_core2411d.lib")
-#	pragma comment (lib, "opencv_imgproc2411d.lib")
-#	pragma comment (lib, "opencv_calib3d2411d.lib")
+//#	pragma comment (lib, "opencv_highgui300d.lib")
+//#	pragma comment (lib, "opencv_core300d.lib")
+//#	pragma comment (lib, "opencv_imgproc300d.lib")
+//#	pragma comment (lib, "opencv_calib3d300d.lib")
 #else
 #	pragma comment (lib, "opencv_highgui2411.lib")
 #	pragma comment (lib, "opencv_core2411.lib")
@@ -375,11 +375,11 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	memcpy(m_pImg->imageData, pAqImageInfo->pImageBuffer, m_pImg->imageSize);
 	
 	cv::Mat viewAfterConversion;
-	cv::Mat image(m_pImg);
-	cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
-	cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
-	cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
-	cv::imshow("Source", viewAfterConversion);
+	//cv::Mat image(m_pImg);
+	//cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
+	//cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
+	//cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
+	//cv::imshow("Source", viewAfterConversion);
 
 	/*
 	int count = 0;

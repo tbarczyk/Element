@@ -1,18 +1,32 @@
-﻿Build started 12/13/2015 6:39:04 PM.
+﻿Build started 12/17/2015 3:02:18 PM.
      1>Project "C:\src\Element\OpenCVCameraCalibrationSample\OpenCVCameraCalibrationSample.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"C:\OpenCV 2.4.11\opencv\build\include" /I"C:\Program Files\JAI\SDK\library\CPP\include" /Zi /nologo /W3 /WX- /Od /D WIN64 /D _WIN64 /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Debug\OpenCVCameraCalibrationSample.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt file_calibration.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\\" /I"C:\OpenCV 2.4.11\opencv\build\include" /I"C:\Program Files\JAI\SDK\library\CPP\include" /Zi /nologo /W3 /WX- /Od /D WIN64 /D _WIN64 /D WIN32 /D _WINDOWS /D _DEBUG /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Debug\OpenCVCameraCalibrationSample.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt file_calibration.cpp
          file_calibration.cpp
      1>c:\src\element\opencvcameracalibrationsample\file_calibration.h(18): warning C4091: 'static ' : ignored on left of 'FilesCalibration' when no variable is declared
-     1>file_calibration.cpp(385): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
-     1>file_calibration.cpp(482): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
-     1>file_calibration.cpp(552): warning C4101: 'e' : unreferenced local variable
-     1>file_calibration.cpp(656): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.hpp(4650): warning C4996: 'clCreateSampler': was declared deprecated
+                 C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.h(1430) : see declaration of 'clCreateSampler'
+     1>C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.hpp(5506): warning C4996: 'clCreateCommandQueue': was declared deprecated
+                 C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.h(1423) : see declaration of 'clCreateCommandQueue'
+     1>C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.hpp(5536): warning C4996: 'clCreateCommandQueue': was declared deprecated
+                 C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.h(1423) : see declaration of 'clCreateCommandQueue'
+     1>C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.hpp(5554): warning C4996: 'clCreateCommandQueue': was declared deprecated
+                 C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.h(1423) : see declaration of 'clCreateCommandQueue'
+     1>C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.hpp(6362): warning C4996: 'clEnqueueTask': was declared deprecated
+                 C:\Program Files (x86)\Intel\OpenCL SDK\5.3\include\CL/cl.h(1437) : see declaration of 'clEnqueueTask'
+     1>file_calibration.cpp(386): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>file_calibration.cpp(483): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>file_calibration.cpp(496): warning C4996: 'freopen': This function or variable may be unsafe. Consider using freopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(226) : see declaration of 'freopen'
+     1>file_calibration.cpp(608): warning C4101: 'e' : unreferenced local variable
+     1>file_calibration.cpp(712): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\time.inl(112) : see declaration of 'localtime'
-     1>file_calibration.cpp(679): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+     1>file_calibration.cpp(735): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
                  C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include\stdio.h(356) : see declaration of 'sprintf'
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /l"0x0409" /Ix64\Debug\ /nologo /fo"x64\Debug\OpenCVCameraCalibrationSample.res" OpenCVCameraCalibrationSample.rc 
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\OpenCV 2.4.11\opencv\build\x64\vc12\lib" /LIBPATH:"C:\Program Files\JAI\SDK\library\CPP\lib\Win64_x64" Jai_Factory.lib opencv_calib3d2411d.lib opencv_contrib2411d.lib opencv_core2411d.lib opencv_features2d2411d.lib opencv_flann2411d.lib opencv_gpu2411d.lib opencv_highgui2411d.lib opencv_imgproc2411d.lib opencv_legacy2411d.lib opencv_ml2411d.lib opencv_nonfree2411d.lib opencv_objdetect2411d.lib opencv_ocl2411d.lib opencv_photo2411d.lib opencv_stitching2411d.lib opencv_superres2411d.lib opencv_ts2411d.lib opencv_video2411d.lib opencv_videostab2411d.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.lib" /MACHINE:X64 x64\Debug\OpenCVCameraCalibrationSample.res
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\Intel\OpenCL SDK\5.3\lib\x64\\" /LIBPATH:"C:\OpenCV 2.4.11\opencv\build\x64\vc12\lib" /LIBPATH:"C:\Program Files\JAI\SDK\library\CPP\lib\Win64_x64" Jai_Factory.lib OpenCL.lib opencv_calib3d2411d.lib opencv_contrib2411d.lib opencv_core2411d.lib opencv_features2d2411d.lib opencv_flann2411d.lib opencv_gpu2411d.lib opencv_highgui2411d.lib opencv_imgproc2411d.lib opencv_legacy2411d.lib opencv_ml2411d.lib opencv_nonfree2411d.lib opencv_objdetect2411d.lib opencv_ocl2411d.lib opencv_photo2411d.lib opencv_stitching2411d.lib opencv_superres2411d.lib opencv_ts2411d.lib opencv_video2411d.lib opencv_videostab2411d.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /ENTRY:"wWinMainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\src\Element\x64\Debug\OpenCVCameraCalibrationSample.lib" /MACHINE:X64 x64\Debug\OpenCVCameraCalibrationSample.res
          x64\Debug\Element.obj
          x64\Debug\file_calibration.obj
          x64\Debug\OpenCVCameraCalibrationSample.obj
@@ -23,4 +37,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:04.74
+Time Elapsed 00:00:04.70

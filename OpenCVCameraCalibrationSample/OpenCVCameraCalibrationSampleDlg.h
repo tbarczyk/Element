@@ -8,7 +8,7 @@
 #include "Element.h"
 // OpenCV includes required
 #include <opencv2/opencv.hpp>
-#include <opencv2/legacy/compat.hpp>
+//#include <opencv2/legacy/compat.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
 #define NODE_NAME_WIDTH         (int8_t*)"Width"

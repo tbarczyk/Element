@@ -241,6 +241,7 @@
   <ItemGroup>
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="file_calibration.cpp" />
+    <ClCompile Include="ocltest.cpp" />
     <ClCompile Include="OpenCVCameraCalibrationSample.cpp" />
     <ClCompile Include="OpenCVCameraCalibrationSampleDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -253,6 +254,7 @@
   <ItemGroup>
     <ClInclude Include="Element.h" />
     <ClInclude Include="file_calibration.h" />
+    <ClInclude Include="ocltest.h" />
     <ClInclude Include="OpenCVCameraCalibrationSample.h" />
     <ClInclude Include="OpenCVCameraCalibrationSampleDlg.h" />
     <ClInclude Include="Resource.h" />

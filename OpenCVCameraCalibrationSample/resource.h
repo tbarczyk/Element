@@ -38,6 +38,7 @@
 #define IDC_FILESCALIB                  1031
 #define PRESTART_BTN                    1032
 #define StreamButton                    1033
+#define OCLBTN                          1034
 
 // Next default values for new objects
 // 

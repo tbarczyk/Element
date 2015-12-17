@@ -118,5 +118,6 @@ public:
 	afx_msg void OnBnClickedBtn();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedStreambutton();
+	afx_msg void OnBnClickedOclbtn();
 };
 

@@ -128,6 +128,7 @@ BEGIN
     PUSHBUTTON      "Files Calibration",IDC_FILESCALIB,328,8,79,26
     PUSHBUTTON      "PREstart",PRESTART_BTN,251,68,50,17
     PUSHBUTTON      "Stream",StreamButton,328,39,80,24
+    PUSHBUTTON      "OpenCL",OCLBTN,329,67,80,24
 END
 
 

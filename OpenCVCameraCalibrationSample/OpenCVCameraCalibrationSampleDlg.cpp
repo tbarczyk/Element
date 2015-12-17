@@ -8,6 +8,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/ocl/ocl.hpp"
+#pragma comment (lib,"OpenCL.lib") 
+#include <CL/cl.hpp>
+#include "ocltest.h"
+#include <opencv2/legacy/compat.hpp>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -99,6 +104,7 @@ BEGIN_MESSAGE_MAP(COpenCVCameraCalibrationSampleDlg, CDialog)
 	ON_BN_CLICKED(IDC_FILESCALIB, &COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib)
 	ON_BN_CLICKED(PRESTART_BTN, &COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn)
 	ON_BN_CLICKED(StreamButton, &COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton)
+	ON_BN_CLICKED(OCLBTN, &COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn)
 END_MESSAGE_MAP()
 
 
@@ -1031,4 +1037,10 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn()
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 {
 	// TODO: Add your control notification handler code here
+}
+
+
+void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
+{
+	testOCL();
 }

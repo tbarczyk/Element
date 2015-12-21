@@ -241,6 +241,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ocltest2.cpp" />
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="file_calibration.cpp" />
     <ClCompile Include="ocltest.cpp" />

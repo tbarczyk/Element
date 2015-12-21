@@ -29,10 +29,10 @@ void testOCL() {
 	cv::ocl::setDevice(devInfo[0]);        // select device to use
 	std::cout << CV_VERSION_EPOCH << "." << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << std::endl;
 
-	const char *KernelSource = "\n" \
+	/*const char *KernelSource = "\n" \
 		"__kernel void erode(																											\n" \
-		"	read_only image2d_t image, __global read_only int2 *element,																\n" \
-		"	int sizeOfElement, write_only image2d_t imageOut, int2 elementDim, int imageWidth, int imageHeight) {						\n" \
+		"	read_only image2d_t image,																									\n" \
+		"	int sizeOfElement, write_only image2d_t imageOut, int imageWidth, int imageHeight) {										\n" \
 		"																																\n" \
 		"	const int2 coords = { get_global_id(0), get_global_id(1) };																	\n" \
 		"	if (coords.x >= imageWidth || coords.y >= imageHeight){																		\n" \
@@ -43,7 +43,7 @@ void testOCL() {
 		"	uint4 ans = { 255, 255, 255, 255 };																							\n" \
 		"	for (int i = 0; i < sizeOfElement; ++i) {																					\n" \
 		"		const int2 elementCoords = element[i];																					\n" \
-		"		const int2 imageCoords = coords + elementCoords - (elementDim >> 1);													\n" \
+		"		const int2 imageCoords = coords;																						\n" \
 		"		const uint4 imagePixel = read_imageui(image, sampler, imageCoords);														\n" \
 		"		if (imagePixel.x < 255) {																								\n" \
 		"			ans.x = 0;																											\n" \
@@ -54,8 +54,16 @@ void testOCL() {
 		"		}																														\n" \
 		"	}																															\n" \
 		"	write_imageui(imageOut, coords, ans);																						\n" \
-		"}																																\n";
+		"}																																\n";*/
 
+	/*const char *KernelSource = "\n" \
+		"__kernel void erode(				                \n" \
+			"   __global uchar* input,						\n" \
+			"   __global uchar* output)						\n" \
+			"{												\n" \
+			"   int i = get_global_id(0);					\n" \
+			"   output[i] = input[i] >= 100 ? 0 : 255;      \n" \
+			"}\n";*/
 	
 		
 	//"__kernel void negaposi_C1_D0(               \n" \
@@ -93,6 +101,62 @@ void testOCL() {
 	});*/
 	//cl::Image2D aa = cl::Image2D(cv::ocl::Context::getContext(), CL_MEM_READ_WRITE, cl::ImageFormat(CL_RGBA, CL_UNORM_INT8));
 	
+	//cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
+	//cv::Mat mat_dst;
+	//if (mat_src.empty())
+	//{
+	//	std::cerr << "Failed to open image file." << std::endl;
+	//}
+	//unsigned int channels = mat_src.channels();
+	//unsigned int depth = mat_src.depth();
+
+	//cv::ocl::oclMat ocl_src(mat_src);
+	//cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
+	//cv::Mat notSrc, notDst;
+	//notSrc = cv::Mat(ocl_src);
+	//cv::ocl::ProgramSource program("erode", KernelSource);
+	//std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
+	//std::size_t localThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
+	//std::vector<std::pair<size_t, const void *> > args;
+	////args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
+	//
+	//cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50));
+	//cv::ocl::oclMat elementOcl = cv::ocl::oclMat(element);
+	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
+	////args.push_back(std::make_pair(sizeof(cl_mem), (void *)100));
+	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
+	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)1000));
+	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)1000));
+	/*read_only image2d_t image, __global read_only int2 *element, int sizeOfElement, write_only image2d_t imageOut, int2 elementDim, int imageWidth, int imageHeight*/
+	//cl_mem imageSource = clCreateImage2D(, );
+
+//		"	read_only image2d_t image,																									\n" \
+//		"	int sizeOfElement, write_only image2d_t imageOut, int imageWidth, int imageHeight) {										\n" \
+	
+	/*float c1 = clock();
+	
+		cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
+			program, "erode", globalThreads, NULL, args, channels, depth, NULL);
+	
+	ocl_dst.download(mat_dst);
+	float t1 = (clock() - c1) / CLOCKS_PER_SEC;
+	ocl_dst.download(mat_dst);
+	float c2 = clock();
+	for (int i = 0; i < 200000; i++)
+		cv::threshold(notSrc, notDst, 100, 255, 1);
+	float t2 = (clock() - c2) / CLOCKS_PER_SEC;*/
+
+
+	const char *KernelSource = "\n" \
+		"__kernel void erode_C1_D0(               \n" \
+		"   __global uchar* input,                   \n" \
+		"   __global uchar* image,                   \n" \
+		"   __global uchar* output)                  \n" \
+		"{                                           \n" \
+		"   int i = get_global_id(0);                \n" \
+		"   output[i] = 255 - input[i];              \n" \
+		"}\n";
+
 	cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
 	cv::Mat mat_dst;
 	if (mat_src.empty())
@@ -104,41 +168,23 @@ void testOCL() {
 
 	cv::ocl::oclMat ocl_src(mat_src);
 	cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
-	cv::Mat notSrc, notDst;
-	notSrc = cv::Mat(ocl_src);
-	cv::ocl::ProgramSource program("negaposi", KernelSource);
+
+	cv::ocl::ProgramSource program("erode", KernelSource);
 	std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-	std::size_t localThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
 	std::vector<std::pair<size_t, const void *> > args;
 	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
+	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
+	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
+	cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
+		program, "erode", globalThreads, NULL, args, channels, depth, NULL);
 	
-	cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50));
-	cv::ocl::oclMat elementOcl = cv::ocl::oclMat(element);
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&elementOcl));
-	
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	/*read_only image2d_t image, __global read_only int2 *element, int sizeOfElement, write_only image2d_t imageOut, int2 elementDim, int imageWidth, int imageHeight*/
-	//cl_mem imageSource = clCreateImage2D(, );
-	
-	float c1 = clock();
-	for (int i = 0; i < 200000; i++)
-		cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
-			program, "negaposi", globalThreads, NULL, args, channels, depth, NULL);
-	float t1 = (clock() - c1) / CLOCKS_PER_SEC;
 	ocl_dst.download(mat_dst);
-	float c2 = clock();
-	for (int i = 0; i < 200000; i++)
-		cv::threshold(notSrc, notDst, 100, 255, 1);
-	float t2 = (clock() - c2) / CLOCKS_PER_SEC;
+
 	cv::namedWindow("mat_src");
 	cv::namedWindow("ocl");
-	cv::namedWindow("ocv");
 	cv::imshow("mat_src", mat_src);
 	cv::imshow("ocl", mat_dst);
-	cv::imshow("ocv", notDst);
+//	cv::imshow("ocv", notDst);
 	cv::waitKey(0);
 	cv::destroyAllWindows();
 };

@@ -1042,5 +1042,5 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
-	testOCL();
+	testOCL2();
 }

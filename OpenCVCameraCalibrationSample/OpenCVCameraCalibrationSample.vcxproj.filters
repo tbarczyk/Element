@@ -37,6 +37,9 @@
     <ClCompile Include="ocltest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ocltest2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenCVCameraCalibrationSample.h">

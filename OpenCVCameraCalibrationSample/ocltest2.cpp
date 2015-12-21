@@ -22,23 +22,23 @@ void err_check(int err, string err_code) {
 void testOCL2() {
 
 	char* kernel_src_std =
-		"__kernel void image_copy(__read_only image2d_t image, __write_only image2d_t imageOut, int sizeOfElement, int elX, int elY, int imageWidth, int imageHeight)						 \n" \
+		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int elX, int elY, int imageWidth, int imageHeight, global read_only int2* element)						 \n" \
 		"{																											 \n" \
 		"																											 \n" \
 		"	const int xout = get_global_id(0);																		 \n" \
 		"	const int yout = get_global_id(1);																		 \n" \
 		"	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;			 \n" \
 		"	float4 pixel;																							 \n" \
-		
+
 		"	pixel = read_imagef(image, sampler, (int2)(xout, yout));												 \n" \
-		"	pixel.x=pixel.x/sizeOfElement;																										 \n" \
-		"	pixel.y=pixel.y/sizeOfElement;																										 \n" \
-		"	pixel.z=pixel.z/sizeOfElement;																										 \n" \
-		"	pixel.w=pixel.w/sizeOfElement;																									 \n" \
+		"	pixel.x=pixel.x/5;																								 \n" \
+		"	pixel.y=pixel.y/5;																											 \n" \
+		"	pixel.z=pixel.z/5;																												 \n" \
+		"	pixel.w=pixel.w/5;																										 \n" \
 		"	write_imagef(imageOut, (int2)(xout, yout), pixel);														 \n" \
 		"}																											 \n";
 
-
+	
 	cl_platform_id platform_id = NULL;
 	cl_uint ret_num_platform;
 
@@ -132,6 +132,21 @@ void testOCL2() {
 	size_t region[] = { width, height, 1 }; // Size of object to be transferred
 	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, matData, 0, NULL, &event[0]);
 	err_check(err, "clEnqueueWriteImage");
+	const int elX = 2;
+	const int elY = 2;
+	int elementData[elX * elY * 2];
+	elementData[0] = 11;
+	elementData[1] = 12;
+	elementData[2] = 13;
+	elementData[3] = 14;
+	elementData[4] = 15;
+	elementData[5] = 16;
+	elementData[6] = 17;
+	elementData[7] = 18;
+	
+
+	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elX * elY * 2, elementData, &err);
+	//err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
 	//cout<<kernel_src_std;
 	// Step 7 : Create and Build Program
 	program = clCreateProgramWithSource(context, 1, (const char **)&kernel_src_std, 0, &err);
@@ -155,8 +170,7 @@ void testOCL2() {
 	err_check(err, "Arg 2 : clSetKernelArg");
 	
 	int sizeOfElement = 3;
-	int elX = 10;
-	int elY = 10;
+	
 	int imageWidth = 512;
 	int imageHeigth = 512;
 
@@ -165,9 +179,10 @@ void testOCL2() {
 	err = clSetKernelArg(kernel, 4, sizeof(int), (void *)&elY);
 	err = clSetKernelArg(kernel, 5, sizeof(int), (void *)&imageWidth);
 	err = clSetKernelArg(kernel, 6, sizeof(int), (void *)&imageHeigth);
+	err = clSetKernelArg(kernel, 7, sizeof(cl_mem), (void *)&element);
 
 	// Step 10 : Execute Kernel 
-	size_t GWSize[] = { width, height, 1 };
+	size_t GWSize[] = { width, height, elX * elY * 2, 1 };
 
 
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);

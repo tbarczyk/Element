@@ -2,7 +2,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#define IMG_SIZE 500
+#define IMG_SIZE 512
 //#include <boost/compute.hpp>
 //#include <boost/compute/interop/opencv/core.hpp>
 #include "opencv2/ocl/ocl.hpp"
@@ -22,16 +22,20 @@ void err_check(int err, string err_code) {
 void testOCL2() {
 
 	char* kernel_src_std =
-		"__kernel void image_copy(__read_only image2d_t image1, __write_only image2d_t image2)						 \n" \
+		"__kernel void image_copy(__read_only image2d_t image, __write_only image2d_t imageOut, int sizeOfElement, int elX, int elY, int imageWidth, int imageHeight)						 \n" \
 		"{																											 \n" \
 		"																											 \n" \
 		"	const int xout = get_global_id(0);																		 \n" \
 		"	const int yout = get_global_id(1);																		 \n" \
 		"	const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;			 \n" \
 		"	float4 pixel;																							 \n" \
-		"																											 \n" \
-		"	pixel = read_imagef(image1, sampler, (int2)(xout, yout));												 \n" \
-		"	write_imagef(image2, (int2)(xout, yout), pixel);														 \n" \
+		
+		"	pixel = read_imagef(image, sampler, (int2)(xout, yout));												 \n" \
+		"	pixel.x=pixel.x/sizeOfElement;																										 \n" \
+		"	pixel.y=pixel.y/sizeOfElement;																										 \n" \
+		"	pixel.z=pixel.z/sizeOfElement;																										 \n" \
+		"	pixel.w=pixel.w/sizeOfElement;																									 \n" \
+		"	write_imagef(imageOut, (int2)(xout, yout), pixel);														 \n" \
 		"}																											 \n";
 
 
@@ -51,7 +55,9 @@ void testOCL2() {
 
 	cl_int err;
 
-	float input[IMG_SIZE * 3], output[IMG_SIZE * 3];
+	float input[IMG_SIZE * 3];
+
+	static float output[IMG_SIZE * IMG_SIZE];
 
 	// Create Input data
 	for (int i = 0; i<3; i++){
@@ -61,6 +67,14 @@ void testOCL2() {
 
 		}
 
+	}
+	cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
+	static float matData[IMG_SIZE*IMG_SIZE];
+	
+	for (int i = 0; i < mat_src.rows; i++)
+	{
+		for (int j = 0; j < mat_src.cols; j++)
+			matData[i*512+j] = mat_src.at<unsigned char>(i, j);
 	}
 
 	// step 1 : getting platform ID
@@ -96,14 +110,14 @@ void testOCL2() {
 	//  Create Image data formate
 	cl_image_format img_fmt;
 
-	img_fmt.image_channel_order = CL_RGBA;
+	img_fmt.image_channel_order = CL_R;
 	img_fmt.image_channel_data_type = CL_FLOAT;
 
 	// Step 6 : Create Image Memory Object
 	cl_mem image1, image2;
 
 	size_t width, height;
-	width = height = 10;// sqrt(IMG_SIZE);
+	width = height = 512;// sqrt(IMG_SIZE);
 
 	image1 = clCreateImage2D(context, CL_MEM_READ_ONLY, &img_fmt, width, height, 0, 0, &err);
 	err_check(err, "image1: clCreateImage2D");
@@ -116,7 +130,7 @@ void testOCL2() {
 
 	size_t origin[] = { 0, 0, 0 }; // Defines the offset in pixels in the image from where to write.
 	size_t region[] = { width, height, 1 }; // Size of object to be transferred
-	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, input, 0, NULL, &event[0]);
+	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, matData, 0, NULL, &event[0]);
 	err_check(err, "clEnqueueWriteImage");
 	//cout<<kernel_src_std;
 	// Step 7 : Create and Build Program
@@ -135,25 +149,38 @@ void testOCL2() {
 	// Step 9 : Set Kernel Arguments
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&image1);
-
 	err_check(err, "Arg 1 : clSetKernelArg");
 
 	err = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&image2);
 	err_check(err, "Arg 2 : clSetKernelArg");
+	
+	int sizeOfElement = 3;
+	int elX = 10;
+	int elY = 10;
+	int imageWidth = 512;
+	int imageHeigth = 512;
+
+	err = clSetKernelArg(kernel, 2, sizeof(int), (void *)&sizeOfElement);
+	err = clSetKernelArg(kernel, 3, sizeof(int), (void *)&elX);
+	err = clSetKernelArg(kernel, 4, sizeof(int), (void *)&elY);
+	err = clSetKernelArg(kernel, 5, sizeof(int), (void *)&imageWidth);
+	err = clSetKernelArg(kernel, 6, sizeof(int), (void *)&imageHeigth);
 
 	// Step 10 : Execute Kernel 
 	size_t GWSize[] = { width, height, 1 };
+
+
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
 
 	// Step 11 : Read output Data, from Device to Host
 	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
 
 	// Print Output
-
-	for (int i = 0; i<3; i++){
+	float a = 0;
+	for (int i = 0; i<IMG_SIZE; i++){
 		for (int j = 0; j<IMG_SIZE; ++j){
 
-			cout << output[(i*IMG_SIZE) + j] << "  ";
+			a = output[(i*IMG_SIZE) + j];
 
 		}
 
@@ -166,10 +193,16 @@ void testOCL2() {
 	// copy Image1 to Image3
 	err = clEnqueueCopyImage(command_queue, image1, image3, origin, origin, region, 1, event, &event[3]);
 	err_check(err, "clEnqueueCopyImage");
+	uchar aaa[512 * 512];
+	for (int i = 0; i < 512 * 512; i++)
+		aaa[i] = (uchar)output[i];
+	
 
-
+	cv::Mat result = cv::Mat(512, 512, CV_8UC1, aaa);
+	cv::namedWindow("res");
+	cv::imshow("res", result);
 	// Step 12 : Release Objects
-
+	cv::waitKey(0);
 	clReleaseMemObject(image3);
 	clReleaseMemObject(image1);
 	clReleaseMemObject(image2);
@@ -178,8 +211,39 @@ void testOCL2() {
 	clReleaseCommandQueue(command_queue);
 	clReleaseContext(context);
 
-	free(kernel_src_std);
+	//free(kernel_src_std);
 
 	
 };
 
+//
+//const char sourceSmart[] = BOOST_COMPUTE_STRINGIZE_SOURCE(__kernel void erode(
+//	read_only image2d_t image,
+//	__global read_only int2 *element,
+//	int sizeOfElement,
+//	write_only image2d_t imageOut,
+//	int2 elementDim,
+//	int imageWidth,
+//	int imageHeight) {
+//
+//	const int2 coords = { get_global_id(0), get_global_id(1) };
+//	if (coords.x >= imageWidth || coords.y >= imageHeight){
+//		return;
+//	}
+//	const sampler_t sampler =
+//		CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
+//	uint4 ans = { 255, 255, 255, 255 };
+//	for (int i = 0; i < sizeOfElement; ++i) {
+//		const int2 elementCoords = element[i];
+//		const int2 imageCoords = coords + elementCoords - (elementDim >> 1);
+//		const uint4 imagePixel = read_imageui(image, sampler, imageCoords);
+//		if (imagePixel.x < 255) {
+//			ans.x = 0;
+//			ans.y = 0;
+//			ans.z = 0;
+//			ans.w = 0;
+//			break;
+//		}
+//	}
+//	write_imageui(imageOut, coords, ans);
+//});

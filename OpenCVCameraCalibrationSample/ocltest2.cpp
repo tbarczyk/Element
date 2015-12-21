@@ -22,7 +22,7 @@ void err_check(int err, string err_code) {
 void testOCL2() {
 
 	char* kernel_src_std =
-		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int elX, int elY, int imageWidth, int imageHeight, global read_only int2* element)						 \n" \
+		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int elX, int elY, int imageWidth, int imageHeight, global read_only int* element)						 \n" \
 		"{																											 \n" \
 		"																											 \n" \
 		"	const int xout = get_global_id(0);																		 \n" \
@@ -31,10 +31,10 @@ void testOCL2() {
 		"	float4 pixel;																							 \n" \
 
 		"	pixel = read_imagef(image, sampler, (int2)(xout, yout));												 \n" \
-		"	pixel.x=pixel.x/5;																								 \n" \
-		"	pixel.y=pixel.y/5;																											 \n" \
-		"	pixel.z=pixel.z/5;																												 \n" \
-		"	pixel.w=pixel.w/5;																										 \n" \
+		"	pixel.x=element[5]*10;																								 \n" \
+		"	pixel.y=element[5]*10;																										 \n" \
+		"	pixel.z=element[5]*10;																											 \n" \
+		"	pixel.w=element[5]*10;																									 \n" \
 		"	write_imagef(imageOut, (int2)(xout, yout), pixel);														 \n" \
 		"}																											 \n";
 
@@ -134,19 +134,11 @@ void testOCL2() {
 	err_check(err, "clEnqueueWriteImage");
 	const int elX = 2;
 	const int elY = 2;
-	int elementData[elX * elY * 2];
-	elementData[0] = 11;
-	elementData[1] = 12;
-	elementData[2] = 13;
-	elementData[3] = 14;
-	elementData[4] = 15;
-	elementData[5] = 16;
-	elementData[6] = 17;
-	elementData[7] = 18;
-	
+	//cl_int2 elementData[] = { { 11, 12 }, { 21, 22 }, { 31, 32 }, { 41, 42 } };
+	int elementData[elX * elY * 2] = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
 	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elX * elY * 2, elementData, &err);
-	//err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
+	err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
 	//cout<<kernel_src_std;
 	// Step 7 : Create and Build Program
 	program = clCreateProgramWithSource(context, 1, (const char **)&kernel_src_std, 0, &err);
@@ -179,7 +171,7 @@ void testOCL2() {
 	err = clSetKernelArg(kernel, 4, sizeof(int), (void *)&elY);
 	err = clSetKernelArg(kernel, 5, sizeof(int), (void *)&imageWidth);
 	err = clSetKernelArg(kernel, 6, sizeof(int), (void *)&imageHeigth);
-	err = clSetKernelArg(kernel, 7, sizeof(cl_mem), (void *)&element);
+	err = clSetKernelArg(kernel, 7, sizeof(cl_mem), (void *)element);
 
 	// Step 10 : Execute Kernel 
 	size_t GWSize[] = { width, height, elX * elY * 2, 1 };
